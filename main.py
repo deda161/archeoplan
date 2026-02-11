@@ -2,6 +2,9 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 
+from data_parser import DataParser
+from graphic_creator import GraphicCreator
+
 ctk.set_appearance_mode("system")
 
 how_to_text = " Arheoplan - это программа для работы с данными о строительных объектах.\n" \
@@ -26,6 +29,8 @@ class ArcheoplanGUI:
         self.root.geometry(f"{width}x{height}")
         self.root.resizable(False, False)
 
+        self.data_parsing_done = False
+
     def _confidure_main_frame(self):
         """
         Configure main frame widget
@@ -42,7 +47,7 @@ class ArcheoplanGUI:
         ctk.CTkButton(
             self.main_frame,
             text="Load and parse data",
-            command=None
+            command=self._load_and_parse_data_cb
         ).grid(row=1, column=0, padx=20, pady=10)
 
         ctk.CTkButton(
@@ -54,7 +59,7 @@ class ArcheoplanGUI:
         ctk.CTkButton(
             self.main_frame,
             text="Generate",
-            command=None
+            command=self._generate_cb
         ).grid(row=3, column=0, padx=20, pady=10)
 
     def _show_how_to_cb(self):
@@ -97,6 +102,30 @@ class ArcheoplanGUI:
         self.how_to_window = None
         self.text_label = None
         self.how_to_frame = None
+
+    def _load_and_parse_data_cb(self):
+        """
+        Load and parse data callback
+        """
+        data_parser = DataParser('data/test_simple.xlsx')
+        data_parser.read_data_from_file()
+        data_parser.prepare_data()
+
+        self.rows, self.conlumns = data_parser.get_squares_matrix_size()
+        self.matrix = data_parser.get_squares_matrix()
+        self.raw_data = data_parser.get_processed_data()
+
+        self.data_parsing_done = True
+        print('done')
+
+    def _generate_cb(self):
+        """
+        Generate callback
+        """
+        if self.data_parsing_done:
+            graphic_creator = GraphicCreator()
+            graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data)
+            print('generated')
 
     def run(self):
         """Start the App"""
