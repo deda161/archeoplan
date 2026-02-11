@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Tuple
 import pandas as pd
 import numpy as np
 import os
@@ -12,6 +12,8 @@ class DataParser:
         self.raw_data = {}
         self.processed_data = []
         self.squares_matrix = []
+        self.matrix_rows = 0
+        self.matrix_cols = 0
 
     def read_data_from_file(self) -> bool:
         '''
@@ -157,13 +159,15 @@ class DataParser:
 
     def __parse_squares_configuration(self, data) -> None:
         matrix = data.values
-        rows = len(matrix)
-        cols = len(matrix[0])
+        self.matrix_rows = len(matrix)
+        self.matrix_cols = len(matrix[0])
 
-        for row in range(0, rows):
-            for col in range(0, cols):
+        for row in range(0, self.matrix_rows):
+            for col in range(0, self.matrix_cols):
                 if pd.isna(matrix[row][col]):
                     matrix[row][col] = -1
+                else:
+                    matrix[row][col] = int(float(matrix[row][col]))
 
         self.squares_matrix = matrix.tolist()
 
@@ -172,6 +176,9 @@ class DataParser:
 
     def get_squares_matrix(self) -> List[List[int]]:
         return self.squares_matrix
+
+    def get_squares_matrix_size(self) -> Tuple[int, int]:
+        return self.matrix_rows, self.matrix_cols
 
     def __convert_artifact_name(self, name) -> str:
         if name == 'костка':
