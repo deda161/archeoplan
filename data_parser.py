@@ -120,7 +120,7 @@ class DataParser:
 
                         # Normalize artifact name
                         artifavt_name = str(row['артэфакт']).strip() if pd.notna(row['артэфакт']) else 'none'
-                        self.__convert_artifact_name(artifavt_name)
+                        artifavt_name = self.__convert_artifact_name(artifavt_name)
 
                         find_record = {
                             'name': artifavt_name,
@@ -231,3 +231,5 @@ class DataParser:
             name = 'kernel'
         else:
             name = 'none'
+
+        return name
