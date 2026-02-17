@@ -3,6 +3,8 @@ import math
 from matplotlib.patches import Rectangle
 from artifacts_manager import ArtifactsManager
 from matplotlib.offsetbox import AnnotationBbox
+import os
+from datetime import datetime
 
 class GraphicCreator:
     def __init__(self):
@@ -22,6 +24,13 @@ class GraphicCreator:
 
         self.ax.set_xticks([])
         self.ax.set_yticks([])
+
+    def __save_plot_as_file(self, file_name):
+        current_datetime = datetime.now()
+        folder_path = f"output_{current_datetime.strftime('%Y_%m_%d__%H_%M_%S')}"
+        os.makedirs(folder_path, exist_ok=True)
+
+        self.fig.savefig(f'{folder_path}/{file_name}.png', dpi=300, bbox_inches='tight')
 
     def __draw_grid(self, rows, columns, squares_matrix):
         for row in range(rows):
@@ -103,7 +112,10 @@ class GraphicCreator:
                                 self.ax.add_artist(ab)
 
         # Plot name
-        self.ax.set_title('Пласт 80-90', fontsize=14, fontweight='bold', pad=20)
+        self.ax.set_title(f'Пласт {artifacts_raw_data[0]['layer']}', fontsize=14, fontweight='bold', pad=20)
 
         plt.tight_layout()
+
+        self.__save_plot_as_file('graph')
+
         plt.show()
