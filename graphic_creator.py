@@ -24,47 +24,44 @@ class GraphicCreator:
         self.ax.set_yticks([])
 
     def __draw_grid(self, rows, columns, squares_matrix):
-        for i in range(rows):
-            for j in range(columns):
-                if (squares_matrix[i][j] != -1):
-                    # Рисуем квадрат
-                    rect = Rectangle((j - 0.5, i - 0.5),  # левый нижний угол
+        for row in range(rows):
+            for column in range(columns):
+                if (squares_matrix[row][column] != -1):
+                    x_coord = column
+                    y_coord = rows - row - 1
+                    rect = Rectangle((x_coord - 0.5, y_coord - 0.5),
                                         1, 1,
                                         facecolor='#fafafa',
-                                        edgecolor='black', #'#495057',
+                                        edgecolor='black',
                                         linewidth=1)
                     self.ax.add_patch(rect)
+                    # add square number as text
+                    if x_coord == 0:
+                        self.ax.text(x_coord - 0.6, y_coord, f'{squares_matrix[row][column]}',
+                                ha='center', va='center',
+                                fontsize=10, color='black', alpha=0.7)
+                    elif y_coord == 0 and x_coord != 0:
+                        self.ax.text(x_coord, y_coord - 0.55, f'{squares_matrix[row][column]}',
+                                ha='center', va='center',
+                                fontsize=10, color='black', alpha=0.7)
+                    elif y_coord != rows - 1 and x_coord != 0:
+                        continue
+                    elif y_coord == rows - 1 and x_coord != 0:
+                        self.ax.text(x_coord, y_coord + 0.55, f'{squares_matrix[row][column]}',
+                                ha='center', va='center',
+                                fontsize=10, color='black', alpha=0.7)
 
+        # TODO calculate edges
         # Calculate edge lines (cause rectangle is not perfect)
-        self.ax.plot([0-0.5, 1+0.5], [0-0.5, 0-0.5],
-                    color='black',
-                    linewidth=2.5,
-                    solid_capstyle='butt')
-        self.ax.plot([3-0.5, 3-0.5], [3-0.5, 6+0.5],
-                    color='black',
-                    linewidth=2.5,
-                    solid_capstyle='butt')
+        # self.ax.plot([0-0.5, 1+0.5], [0-0.5, 0-0.5],
+        #             color='black',
+        #             linewidth=2.5,
+        #             solid_capstyle='butt')
+        # self.ax.plot([3-0.5, 3-0.5], [3-0.5, 6+0.5],
+        #             color='black',
+        #             linewidth=2.5,
+        #             solid_capstyle='butt')
 
-        current_square_num= -1
-        for x in range(columns):
-            for y in range(rows):
-                current_square_num += 1
-                if squares_matrix[y][x] == -1:
-                    continue
-                if x == 0:
-                    self.ax.text(x - 0.6, y, f'{squares_matrix[y][x]}',
-                            ha='center', va='center',
-                            fontsize=10, color='black', alpha=0.7)
-                elif y == 0 and x != 0:
-                    self.ax.text(x, y - 0.55, f'{squares_matrix[y][x]}',
-                            ha='center', va='center',
-                            fontsize=10, color='black', alpha=0.7)
-                elif y != rows - 1 and x != 0:
-                    continue
-                elif y == rows - 1 and x != 0:
-                    self.ax.text(x, y + 0.55, f'{squares_matrix[y][x]}',
-                            ha='center', va='center',
-                            fontsize=10, color='black', alpha=0.7)
 
     def __prepare_artifacts_data(self, artifacts_raw_data):
         self.artifacts = []
@@ -80,17 +77,13 @@ class GraphicCreator:
 
         artifacts_manager = ArtifactsManager()
 
-        x_coordinate = 0
-        y_coordinate = 0
-        for i in range(rows):
-            for j in range(columns):
-                current_square = squares_matrix[i][j]
+        for row in range(rows):
+            for column in range(columns):
+                current_square = squares_matrix[row][column]
                 if current_square != -1:
                     artifacts_square = next((d for d in self.artifacts if d['square'] == current_square), None)
-                    x_min = x_coordinate - 0.5
-                    x_max = x_coordinate + 0.5
-                    y_min = y_coordinate - 0.5
-                    y_max = y_coordinate + 0.5
+                    x_min = column - 0.5
+                    y_min = rows - row - 1 - 0.5
                     if artifacts_square != None and artifacts_square['finds'] != 'no':
                         counter = 0
                         for artifact in artifacts_square['finds']:
@@ -108,10 +101,6 @@ class GraphicCreator:
                             if artifact_symble != None:
                                 ab = AnnotationBbox(artifact_symble, (x, y), frameon=False)
                                 self.ax.add_artist(ab)
-                y_coordinate += 1
-                if (y_coordinate == rows):
-                    y_coordinate = 0
-                    x_coordinate += 1
 
         # Plot name
         self.ax.set_title('Пласт 80-90', fontsize=14, fontweight='bold', pad=20)
