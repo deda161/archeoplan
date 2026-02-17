@@ -115,6 +115,7 @@ class DataParser:
 
                         try:
                             y = float(y_str) if y_str else 50
+                            y = 100 - y # Convert to North
                         except:
                             y = 50
 
