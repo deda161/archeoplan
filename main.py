@@ -1,15 +1,13 @@
 import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 from data_parser import DataParser
 from graphic_creator import GraphicCreator
 
 ctk.set_appearance_mode("system")
 
-how_to_text = " Arheoplan - это программа для работы с данными о строительных объектах.\n" \
-    "Она предоставляет возможность загрузки и обработки данных о строительных объектах,\n" \
-    "а также создания и сохранения графических представлений данных в виде карты."
+how_to_text = "Will be added soon..."
 
 class ArcheoplanGUI:
     def __init__(self):
@@ -52,12 +50,6 @@ class ArcheoplanGUI:
 
         ctk.CTkButton(
             self.main_frame,
-            text="Configure",
-            command=None
-        ).grid(row=2, column=0, padx=20, pady=10)
-
-        ctk.CTkButton(
-            self.main_frame,
             text="Generate",
             command=self._generate_cb
         ).grid(row=3, column=0, padx=20, pady=10)
@@ -86,12 +78,13 @@ class ArcheoplanGUI:
             command=self._close_how_to_cb
         ).grid(row=1, column=0, padx=20, pady=10)
 
-        self.how_to_window.update_idletasks()
 
         width = self.how_to_frame.winfo_reqwidth() + 40
         height = self.how_to_frame.winfo_reqheight() + 40
 
-        self.how_to_window.geometry(f"{width}x{height}")
+        # self.how_to_window.geometry(f"{width}x{height}")
+        self.how_to_window.transient(self)
+        self.how_to_window.update_idletasks()
         self.how_to_window.resizable(False, False)
 
     def _close_how_to_cb(self):
@@ -107,16 +100,28 @@ class ArcheoplanGUI:
         """
         Load and parse data callback
         """
-        data_parser = DataParser('data/test_simple.xlsx')
-        data_parser.read_data_from_file()
-        data_parser.prepare_data()
+        file_path = filedialog.askopenfilename(
+                    title="Choose Excel file...",
+                    filetypes=[("Excel files", "*.xlsx *.xls"), ("All files", "*.*")]
+                )
 
-        self.rows, self.conlumns = data_parser.get_squares_matrix_size()
-        self.matrix = data_parser.get_squares_matrix()
-        self.raw_data = data_parser.get_processed_data()
+        if file_path:
 
-        self.data_parsing_done = True
-        print('done')
+            if not file_path.lower().endswith(('.xlsx', '.xls')):
+                self._draw_error_or_info_dialog_window('Error', '❌ Not Excel format!')
+                return
+
+            data_parser = DataParser(file_path)
+            data_parser.read_data_from_file()
+            data_parser.prepare_data()
+
+            self.rows, self.conlumns = data_parser.get_squares_matrix_size()
+            self.matrix = data_parser.get_squares_matrix()
+            self.raw_data = data_parser.get_processed_data()
+
+            self.data_parsing_done = True
+        else:
+            self._draw_error_or_info_dialog_window('Error', '❌ Please, choose Excel file!')
 
     def _generate_cb(self):
         """
@@ -125,7 +130,38 @@ class ArcheoplanGUI:
         if self.data_parsing_done:
             graphic_creator = GraphicCreator()
             graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data)
-            print('generated')
+        else:
+            self._draw_error_or_info_dialog_window('Error', '❌ Please, load and parse data first!')
+
+    def _draw_error_or_info_dialog_window(self, title_text, message_text):
+        dialog = ctk.CTkToplevel(self.root)
+        dialog.title(title_text)
+        dialog.resizable(False, False)
+
+        # Make the dialog modal
+        dialog.grab_set()
+
+        # Label text
+        label = ctk.CTkLabel(
+            dialog,
+            text=message_text,
+            font=("Arial", 14)
+        )
+        label.pack(pady=20)
+
+        # Close button
+        btn_ok = ctk.CTkButton(
+            dialog,
+            text="Close",
+            command=dialog.destroy,
+            width=100
+        )
+        btn_ok.pack(pady=10)
+
+        dialog.transient(self)
+        dialog.update_idletasks()
+        dialog.geometry("")
+        dialog.wait_window()
 
     def run(self):
         """Start the App"""
