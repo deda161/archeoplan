@@ -102,22 +102,21 @@ class DataParser:
                             # TODO
                             square_num = square_num_str
 
-                        # Get artifact coordinates, where y is North, x is West
-                        y_str = str(row['поўнач']).strip()
-                        x_str = str(row['захад']).strip()
+                        # Get artifact coordinates
+                        north_str = str(row['поўнач']).strip()
+                        west_str = str(row['захад']).strip()
 
                         # Convert coordinates to float
                         # If coords convertion fails, use default values - 50 (center of square)
                         try:
-                            x = float(x_str) if x_str else 50
+                            north = float(north_str) if north_str else 50
                         except:
-                            x = 50
+                            north = 50
 
                         try:
-                            y = float(y_str) if y_str else 50
-                            y = 100 - y # Convert to North
+                            west = float(west_str) if west_str else 50
                         except:
-                            y = 50
+                            west = 50
 
                         # Normalize artifact name
                         artifavt_name = str(row['артэфакт']).strip() if pd.notna(row['артэфакт']) else 'none'
@@ -125,7 +124,7 @@ class DataParser:
 
                         find_record = {
                             'name': artifavt_name,
-                            'xy': (x, y)
+                            'nw': (north, west)
                         }
 
                         # Add all other columns if they are not empty
