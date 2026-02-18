@@ -16,10 +16,11 @@ class ArcheoplanGUI:
         Initialize main window
         """
         self.thread = None
+        self.north_direction = 'top'
         self.root = ctk.CTk()
         self.root.title("Arheoplan")
 
-        self._confidure_main_frame()
+        self._configure_main_frame()
 
         self.root.update_idletasks()
 
@@ -31,7 +32,7 @@ class ArcheoplanGUI:
 
         self.data_parsing_done = False
 
-    def _confidure_main_frame(self):
+    def _configure_main_frame(self):
         """
         Configure main frame widget
         """
@@ -50,11 +51,30 @@ class ArcheoplanGUI:
             command=self._load_and_parse_data_cb
         ).grid(row=1, column=0, padx=20, pady=10)
 
+        directions = ["Top", "Bottom", "Left", "Right"]
+        self.combobox_label = ctk.CTkLabel(self.main_frame, text="Choose North direction:", font=("Arial", 12))
+        self.combobox_label.grid(row=2, column=0, padx=10)
+
+        self.combobox = ctk.CTkComboBox(
+            self.main_frame,
+            values=directions,
+            command=self.on_combobox_select,
+            border_color="#3498db",
+            button_color="#3498db",
+            button_hover_color="#2980b9",
+            dropdown_fg_color="#2b2b2b",
+            dropdown_hover_color="#3498db",
+            dropdown_text_color="white"
+        )
+        self.combobox.grid(row=3, column=0, padx=20, pady=10)
+
+        self.combobox.set("Top")
+
         ctk.CTkButton(
             self.main_frame,
             text="Generate",
             command=self._generate_cb
-        ).grid(row=3, column=0, padx=20, pady=10)
+        ).grid(row=4, column=0, padx=20, pady=10)
 
     def _show_how_to_cb(self):
         """
@@ -126,7 +146,7 @@ class ArcheoplanGUI:
         """
         if self.data_parsing_done:
             graphic_creator = GraphicCreator()
-            self.thread = threading.Thread(target=graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data))
+            self.thread = threading.Thread(target=graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data, self.north_direction))
             self.thread.start()
         else:
             self._draw_error_or_info_dialog_window('Error', '❌ Please, load and parse data first!')
@@ -134,6 +154,9 @@ class ArcheoplanGUI:
     def _check_thread(self):
         if self.thread.is_alive():
                 self.root.after(100, self._check_thread, self.thread)
+
+    def on_combobox_select(self, choice):
+        self.north_direction = choice
 
     def _draw_error_or_info_dialog_window(self, title_text, message_text):
         dialog = ctk.CTkToplevel(self.root)
