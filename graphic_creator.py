@@ -5,6 +5,7 @@ from artifacts_manager import ArtifactsManager
 from matplotlib.offsetbox import AnnotationBbox
 import os
 from datetime import datetime
+import threading
 
 class GraphicCreator:
     def __init__(self):
@@ -30,12 +31,14 @@ class GraphicCreator:
             self.figs.append(fig)
             self.axes.append(ax)
 
-    def __save_plot_as_file(self, file_name, layer):
+    def __save_plot_as_file(self, file_name, layer) -> str:
         current_datetime = datetime.now()
         folder_path = f"output_{current_datetime.strftime('%Y_%m_%d__%H_%M')}"
         os.makedirs(folder_path, exist_ok=True)
 
         self.figs[layer].savefig(f'{folder_path}/{file_name}.png', dpi=300, bbox_inches='tight')
+
+        return folder_path
 
     def __draw_grid(self, rows, columns, squares_matrix, layer=0):
         for row in range(rows):
@@ -89,6 +92,7 @@ class GraphicCreator:
     def make_plots(self, rows, columns, squares_matrix, artifacts_raw_data):
         layers_array, layers_count = self.__prepare_layers_data(artifacts_raw_data)
         self.__prepare_background(rows, columns, layers_count)
+        folder_path = ''
 
         for layer in range(layers_count):
             self.__draw_grid(rows, columns, squares_matrix, layer)
@@ -127,6 +131,8 @@ class GraphicCreator:
 
             plt.tight_layout()
 
-            self.__save_plot_as_file(f'graph_{layers_array[layer]}', layer)
+            folder_path = self.__save_plot_as_file(f'graph_{layers_array[layer]}', layer)
 
         plt.show()
+
+        os.startfile(folder_path)

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import filedialog
+import threading
 
 from data_parser import DataParser
 from graphic_creator import GraphicCreator
@@ -14,6 +15,7 @@ class ArcheoplanGUI:
         """
         Initialize main window
         """
+        self.thread = None
         self.root = ctk.CTk()
         self.root.title("Arheoplan")
 
@@ -124,9 +126,14 @@ class ArcheoplanGUI:
         """
         if self.data_parsing_done:
             graphic_creator = GraphicCreator()
-            graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data)
+            self.thread = threading.Thread(target=graphic_creator.make_plots(self.rows, self.conlumns, self.matrix, self.raw_data))
+            self.thread.start()
         else:
             self._draw_error_or_info_dialog_window('Error', '❌ Please, load and parse data first!')
+
+    def _check_thread(self):
+        if self.thread.is_alive():
+                self.root.after(100, self._check_thread, self.thread)
 
     def _draw_error_or_info_dialog_window(self, title_text, message_text):
         dialog = ctk.CTkToplevel(self.root)
