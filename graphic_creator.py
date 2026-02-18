@@ -57,28 +57,19 @@ class GraphicCreator:
                         self.axes[layer].text(x_coord - 0.6, y_coord, f'{squares_matrix[row][column]}',
                                 ha='center', va='center',
                                 fontsize=10, color='black', alpha=0.7)
-                    elif y_coord == 0 and x_coord != 0:
+                    elif y_coord == 0 and (x_coord != 0 and x_coord != columns - 1):
                         self.axes[layer].text(x_coord, y_coord - 0.55, f'{squares_matrix[row][column]}',
                                 ha='center', va='center',
                                 fontsize=10, color='black', alpha=0.7)
+                    elif x_coord == columns - 1:
+                        self.axes[layer].text(x_coord + 0.6, y_coord, f'{squares_matrix[row][column]}',
+                                ha='center', va='center',fontsize=10, color='black', alpha=0.7)
                     elif y_coord != rows - 1 and x_coord != 0:
                         continue
-                    elif y_coord == rows - 1 and x_coord != 0:
+                    elif y_coord == rows - 1 and (x_coord != 0 and x_coord != columns - 1):
                         self.axes[layer].text(x_coord, y_coord + 0.55, f'{squares_matrix[row][column]}',
                                 ha='center', va='center',
                                 fontsize=10, color='black', alpha=0.7)
-
-        # TODO calculate edges
-        # Calculate edge lines (cause rectangle is not perfect)
-        # self.ax.plot([0-0.5, 1+0.5], [0-0.5, 0-0.5],
-        #             color='black',
-        #             linewidth=2.5,
-        #             solid_capstyle='butt')
-        # self.ax.plot([3-0.5, 3-0.5], [3-0.5, 6+0.5],
-        #             color='black',
-        #             linewidth=2.5,
-        #             solid_capstyle='butt')
-
 
     def __prepare_layers_data(self, artifacts_raw_data) -> tuple[list, int]:
         self.artifacts = []
@@ -89,7 +80,7 @@ class GraphicCreator:
 
         return layers_array, len(layers_array)
 
-    def make_plots(self, rows, columns, squares_matrix, artifacts_raw_data):
+    def make_plots(self, rows, columns, squares_matrix, artifacts_raw_data, north_direction='top'):
         layers_array, layers_count = self.__prepare_layers_data(artifacts_raw_data)
         self.__prepare_background(rows, columns, layers_count)
         folder_path = ''
@@ -112,14 +103,15 @@ class GraphicCreator:
                             counter = 0
                             for artifact in artifacts_square['finds']:
 
-                                if (artifact['xy'][0] < 0 or artifact['xy'][1] < 0) or (artifact['xy'][0] > 100 or artifact['xy'][1] > 100) or math.isnan(artifact['xy'][0]) or math.isnan(artifact['xy'][1]) or math.isinf(artifact['xy'][0]) or math.isinf(artifact['xy'][1]):
-                                    print(f"Incorrect coords: {artifact['xy']} for artifact {artifact['name']} in square {current_square}")
+                                if (artifact['nw'][0] < 0 or artifact['nw'][1] < 0) or (artifact['nw'][0] > 100 or artifact['nw'][1] > 100) or math.isnan(artifact['nw'][0]) or math.isnan(artifact['nw'][1]) or math.isinf(artifact['nw'][0]) or math.isinf(artifact['nw'][1]):
+                                    print(f"Incorrect coords: {artifact['nw']} for artifact {artifact['name']} in square {current_square}")
                                     counter += 1
                                     continue
 
                                 counter += 1
-                                x = (artifact['xy'][0] / 100) + x_min
-                                y = (artifact['xy'][1] / 100) + y_min
+                                x, y = self.__convert_coordinates(artifact['nw'][0], artifact['nw'][1], north_direction)
+                                x = x_min + x
+                                y = y_min + y
                                 artifact_symble = artifacts_manager.get_offset_image_of_artifact(artifact['name'])
 
                                 if artifact_symble != None:
@@ -136,3 +128,25 @@ class GraphicCreator:
         plt.show()
 
         os.startfile(folder_path)
+
+    def __convert_coordinates(self, north, west, north_direction) -> tuple[int, int]:
+        x, y = 0, 0
+
+        if north_direction == 'top':
+            x = west
+            y = 100 - north
+        elif north_direction == 'bottom':
+            x = 100 - west
+            y = north
+        elif north_direction == 'left':
+            x = north
+            y = west
+        elif north_direction == 'right':
+            x = 100 - north
+            y = 100 - west
+
+        # Convert to 0-1
+        x = x / 100
+        y = y / 100
+
+        return x,y
