@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
 
 from data_parser import DataParser
 from graphic_creator import GraphicCreator
@@ -78,11 +78,6 @@ class ArcheoplanGUI:
             command=self._close_how_to_cb
         ).grid(row=1, column=0, padx=20, pady=10)
 
-
-        width = self.how_to_frame.winfo_reqwidth() + 40
-        height = self.how_to_frame.winfo_reqheight() + 40
-
-        # self.how_to_window.geometry(f"{width}x{height}")
         self.how_to_window.transient(self)
         self.how_to_window.update_idletasks()
         self.how_to_window.resizable(False, False)
