@@ -132,6 +132,8 @@ class GraphicCreator:
     def __convert_coordinates(self, north, west, north_direction) -> tuple[int, int]:
         x, y = 0, 0
 
+        north_direction = north_direction.lower()
+
         if north_direction == 'top':
             x = west
             y = 100 - north
@@ -144,6 +146,9 @@ class GraphicCreator:
         elif north_direction == 'right':
             x = 100 - north
             y = 100 - west
+        else:
+            # TODO error handling
+            pass
 
         # Convert to 0-1
         x = x / 100
